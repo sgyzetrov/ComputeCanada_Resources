@@ -15,7 +15,7 @@ for(i in 1:5){
 	seedTestArray<-c(seedTestArray, seed^i)
 }
 # 需要修改路径
-save(seedTestArray, file=paste0("/home/username/projects/def-ubcxzh/username/Results/seedTestRun.",seed,".rda"))
+save(seedTestArray, file=paste0("/home/username/projects/d****h/username/Results/seedTestRun.",seed,".rda"))
 time2<-Sys.time()
 print(time2-time1)
 q(save="no")
