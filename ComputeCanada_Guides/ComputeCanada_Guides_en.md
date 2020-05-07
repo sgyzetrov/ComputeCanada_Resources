@@ -41,7 +41,7 @@ Now I will start on using the clusters. A much detailed guide can be found at [h
 
 ## 3. Login and Logout of Compute Canada
 
-We can use command `ssh` to log on to Compute Canada's servers. Under macOS/Linus, open a terminal, and type in the following command to log in Cedar, Graham or Béluga (for Windows users, you can use `MobaXerm` for the following operation):
+We can use command `ssh` to log on to Compute Canada's servers. Under macOS/Linux, open a terminal, and type in the following command to log in Cedar, Graham or Béluga (for Windows users, you can use `MobaXerm` for the following operation):
 
 ```sh
 ssh username@cedar.computecanada.ca
