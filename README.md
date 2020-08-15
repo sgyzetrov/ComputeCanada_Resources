@@ -31,7 +31,29 @@ When we are done with the simple introductory guide above and moving further wit
 
     Once a job is running we can try `srun --jobid=<jobID> --pty bash` to jump into the job and then run typical *nix commands such as "top" to see resource usage. 
 
-2. TBA
+2. Parallel programming with the Python multiprocessing module:
+   
+   On a cluster, it is very important to use the cores that are allocated to your job. Launching more processes than you have cores requested will slow down your calculation and possibly overload the compute node. Launching fewer processes than you have cores will result in wasted resources and cores remaining idle. The correct number of cores to use in your code is determined by the amount of resources you requested to the scheduler <sup>[2](#2-httpsdocscomputecanadacawikipythonparallel_programming_with_the_python_multiprocessing_module)</sup>.
+   
+   In job script try something like
+   ```
+   #SBATCH --cpus-per-task=4
+   python cubes_parallel.py
+   ```
+   And in Python script try
+   ```py
+    import multiprocessing as mp
+    import os
+
+    def worker_func(x):
+        return x**3
+
+    ncpus = int(os.environ.get('SLURM_CPUS_PER_TASK',default=1))
+    pool = mp.Pool(processes=ncpus)
+    data = [1, 2, 3, 4, 5, 6]
+    cubes = pool.map(worker_func, data)
+    print(cubes)
+   ```
 
 ## Resources
 
@@ -40,3 +62,4 @@ When we are done with the simple introductory guide above and moving further wit
 ## References
 
 #### [1] https://docs.computecanada.ca/wiki/Running_jobs#Completed_jobs
+#### [2] https://docs.computecanada.ca/wiki/Python#Parallel_programming_with_the_Python_multiprocessing_module
