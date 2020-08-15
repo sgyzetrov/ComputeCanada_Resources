@@ -8,11 +8,11 @@ English version of document: [click](https://github.com/sgyzetrov/ComputeCanada_
 
 When we are done with the simple introductory guide above and moving further with CC servers, naturally we will encounter numerous problems. There are some useful things that I have learned so far and I would like to share with you (I will be updating this section as well as [FAQ](#faq) periodically):
 
-1. Get a short summary of the CPU- and memory-efficiency of a completed jobs with `seff` <sup>[1](#1-httpsdocscomputecanadacawikirunning_jobscompleted_jobs)</sup>:
+1. Get a short summary of the CPU- and memory-efficiency of a completed jobs with `seff` <sup>[1](#ref1)</sup>:
    ```
    seff <jobID>
    ```
-2. Find more detailed information about a completed job with `sacct`, and optionally, control what it prints using `--format` <sup>[1](#1-httpsdocscomputecanadacawikirunning_jobscompleted_jobs)</sup>:
+2. Find more detailed information about a completed job with `sacct`, and optionally, control what it prints using `--format` <sup>[1](#ref1)</sup>:
     ```
     $ sacct -j <jobID>
     $ sacct -j <jobID> --format=JobID,JobName,MaxRSS,Elapsed
@@ -33,7 +33,7 @@ When we are done with the simple introductory guide above and moving further wit
 
 2. Parallel programming with the Python multiprocessing module:
    
-   On a cluster, it is very important to use the cores that are allocated to your job. Launching more processes than you have cores requested will slow down your calculation and possibly overload the compute node. Launching fewer processes than you have cores will result in wasted resources and cores remaining idle. The correct number of cores to use in your code is determined by the amount of resources you requested to the scheduler <sup>[2](#2-httpsdocscomputecanadacawikipythonparallel_programming_with_the_python_multiprocessing_module)</sup>.
+   On a cluster, it is very important to use the cores that are allocated to your job. Launching more processes than you have cores requested will slow down your calculation and possibly overload the compute node. Launching fewer processes than you have cores will result in wasted resources and cores remaining idle. The correct number of cores to use in your code is determined by the amount of resources you requested to the scheduler <sup>[2](#ref2)</sup>.
    
    In job script try something like
    ```
@@ -61,5 +61,5 @@ When we are done with the simple introductory guide above and moving further wit
 
 ## References
 
-#### [1] https://docs.computecanada.ca/wiki/Running_jobs#Completed_jobs
-#### [2] https://docs.computecanada.ca/wiki/Python#Parallel_programming_with_the_Python_multiprocessing_module
+<span id="ref1">[1]</span> https://docs.computecanada.ca/wiki/Running_jobs#Completed_jobs<br/>
+<span id="ref2">[2]</span> https://docs.computecanada.ca/wiki/Python#Parallel_programming_with_the_Python_multiprocessing_module
