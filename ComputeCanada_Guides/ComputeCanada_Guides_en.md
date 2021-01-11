@@ -256,7 +256,7 @@ for ii in {1..10}; do sbatch testRun.sh $ii; done
 
 Here we set up a loop from 1 to 10. `$ii` will therefore be 1 to 10 respectively and passed to `testRun.sh`. In `testRun.sh` it will be passed to `$1`, then to `testRun.r`.
 
-If everything went smoothly, for each `$ii` (from 1 to 10), it should generate 3 types of files in 3 different location. A `.rda` data file in `Results` folder, a `.Rout` file (containing outputs from the R script, e.g. cat(), etc.) in `Rout` folder (Rout folder needs to be created before submitting jobs), and a `slurm-xxxxxx.out` file (containing error information or other slurm job related outputs that are useful for debugging) in the same folder as `testRun.r`.
+If everything went smoothly, for each `$ii` (from 1 to 10), it should generate 3 types of files in 3 different location. A `.rda` data file in `Results` folder, a `.Rout` file (containing outputs from the R script, e.g. if you used cat(), etc. in your script) in `Rout` folder (Rout folder needs to be created before submitting jobs), and a `slurm-xxxxxx.out` file (containing error information or other slurm job related outputs that are useful for debugging) in the same folder as `testRun.r`. Sometimes `slurm-xxxxxx.out` is just blank so expect that.
 
 For a single job submission, you can for example use `sbatch testRun.sh 2` directly in cluster command line. That is, use the `sbatch` command to pass `testRun.sh 2` to compute node, and compute node will use bash to run `testRun.sh 2`. Value `2` will be passed to `testRun.sh`, and then from `testRun.sh` to `testRun.r`.
 
