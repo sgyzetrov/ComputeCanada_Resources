@@ -186,8 +186,7 @@ Although Vim is quite complicated and hard to master, we only need to remember a
 
 Due to the nature of a cluster, we can easily run the same program multiple times (by submitting multiple jobs), and we can specify the parameters passed to the program at each run. Of course we can also run program in parallel in one job, but it will not be covered in this document. 
 
-Now let's say I want to find [1^1, 1^2, 1^3, 1^4, 1^5], [2^1, ..., 2^5], [...], [10^1, ..., 10^5], and save the results in `rda` files. How to write the R code?
-
+Now let's say I want to find [1^1, 1^2, 1^3, 1^4, 1^5], [2^1, ..., 2^5], [...], [10^1, ..., 10^5], and save the results in `rda` files in a folder named `Results`. How to write the R code?
 
 Here is one way to write `testRun.r`:
 
@@ -207,7 +206,7 @@ seedTestArray<-c(seedTestArray, seed^i)
 }
 
 # Note: remember to change path!
-save(seedTestArray, file=paste0("/home/username/projects/de▇▇▇/username/Results/seedTestRun.",seed,".r da"))
+save(seedTestArray, file=paste0("/home/username/projects/de▇▇▇/username/Results/seedTestRun.",seed,".rda"))
 time2<-Sys.time()
 print(time2-time1)
 q(save="no")
@@ -256,6 +255,8 @@ for ii in {1..10}; do sbatch testRun.sh $ii; done
 ```
 
 Here we set up a loop from 1 to 10. `$ii` will therefore be 1 to 10 respectively and passed to `testRun.sh`. In `testRun.sh` it will be passed to `$1`, then to `testRun.r`.
+
+If everything went smoothly, for each `$ii` (from 1 to 10), it should generate 3 types of files in 3 different location. A `.rda` data file in `Results` folder, a `.Rout` file (containing outputs from the R script, e.g. cat(), etc.) in `Rout` folder (Rout folder needs to be created before submitting jobs), and a `slurm-xxxxxx.out` file (containing error information or other slurm job related outputs that are useful for debugging) in the same folder as `testRun.r`.
 
 For a single job submission, you can for example use `sbatch testRun.sh 2` directly in cluster command line. That is, use the `sbatch` command to pass `testRun.sh 2` to compute node, and compute node will use bash to run `testRun.sh 2`. Value `2` will be passed to `testRun.sh`, and then from `testRun.sh` to `testRun.r`.
 
