@@ -9,6 +9,6 @@ fi
 # export SYSTEMD_PAGER=
 
 # User specific aliases and functions
-
 module load r
-export R_LIBS=~/R/library
+mkdir -p ~/.local/R/$EBVERSIONR/
+export R_LIBS=~/.local/R/$EBVERSIONR/
