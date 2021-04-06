@@ -10,8 +10,11 @@ Table of Contents<sup>*</sup>
 - [6. Submitting Jobs](#6-submitting-jobs)
     - [6.1 An Example (and also Vim Usage)](#61-an-example-and-also-vim-usage)
     - [6.2 Submitting Job Script and Job Running](#62-submitting-job-script-and-job-running)
+    - [6.3 Load different versions of R/Python/... using modules](#63-load-different-versions-of-rpython-using-modules)
+        - [Want R?](#want-r)
+        - [Want Python?](#want-python)
 
-<sub>*: V0.0.1 by Yang (Simon) Guo, based on V0.0.2 of zh-CN document - operating on Compute Canada clusters</sub>
+<sub>*: V0.0.1 by Yang (Simon) Guo, based on V0.0.2 of my zh-CN document - operating on Compute Canada clusters</sub>
 
 ## 1. Introduction
 
@@ -272,3 +275,136 @@ A much detailed description and relevant materials can be found at:
 
 1. [https://docs.computecanada.ca/wiki/Running_jobs](https://docs.computecanada.ca/wiki/Running_jobs)
 2. [https://github.com/sgyzetrov/ComputeCanada_Resources/tree/master/RunningJobs](https://github.com/sgyzetrov/ComputeCanada_Resources/tree/master/RunningJobs) starting from page 31
+
+### 6.3 Load different versions of R/Python/... using modules
+
+Software in Compute Canada clusters can be loaded using modules. 
+
+#### Want R? 
+
+Sure, use `module load r` and it will load the latest version of R. Don't forget to also export the R_LIBS environment variable:
+
+```sh
+mkdir -p ~/.local/R/$EBVERSIONR/
+export R_LIBS=~/.local/R/$EBVERSIONR/
+```
+
+Noticed I put similar code in both `.bashrc` and `.bash_profile`:
+
+```sh
+module load r
+mkdir -p ~/.local/R/$EBVERSIONR/
+export R_LIBS=~/.local/R/$EBVERSIONR/
+```
+
+What this does is it automatically load the latest version of R and specify its library path every time you log onto the cluster.
+However, if you want to stick with a specific version of R (say, 4.0.2), there are two ways you may try:
+
+The first is when logged on to the cluster, enter the following code:
+
+```sh
+module load gcc/9.3.0 r/4.0.2
+mkdir -p ~/.local/R/$EBVERSIONR/
+export R_LIBS=~/.local/R/$EBVERSIONR/
+```
+
+This will load R-4.0.2 for you. And you can install whatever package you want with it. Since you specified the local package path, you do not have to worry about losing all installed packages when logged out and logged back in. It will still be there. You just need to specify the version using the above three lines of code again.
+
+Alternatively, you can try replace `module load r` in my provided `.bashrc` and `.bash_profile` file with `module load gcc/9.3.0 r/4.0.2` and what this does is it will not load the latest version of R (say 4.0.5, whatever) for you, instead, it will load R-4.0.2 like you requested here and it will do it automatically whenever you logged on to the cluster so you no longer need to enter those three lines of code every time.
+
+To see what R version is available for you, try `module spider r`, for more information, check: [link](https://docs.computecanada.ca/wiki/R#Installing_R_packages).
+
+For R job submission script, I have included my job submission script template, I always add those 3 lines of code in middle to specify the R version and package path for the job to be able to load my installed packages:
+
+```sh
+#!/bin/bash
+#SBATCH -J my_job_name
+#SBATCH --account=de▇▇▇
+#SBATCH --cpus-per-task=1
+#SBATCH --mem-per-cpu=4G # 1*4G mem
+#SBATCH -t 1:30:00 # Running time of 1.5 hour
+
+module load gcc/9.3.0 r/4.0.2              # Adjust version and add the gcc module used for installing packages.
+# specify the local installation directory according to currently R module that is loaded and install needed package.
+mkdir -p ~/.local/R/$EBVERSIONR/
+export R_LIBS=~/.local/R/$EBVERSIONR/
+
+Rscript /path/to/RScript/my_script.R
+```
+
+Note that it *may* be a complete different story if you wish to use slurm local disks ([SLURM_TMPDIR](https://docs.computecanada.ca/wiki/Using_node-local_storage)). I am not sure since I have not tried using SLURM_TMPDIR with R jobs so you might want to reach out to support@computecanada.ca for additional support.
+
+#### Want Python?
+
+By default (in my provided `.bash_profile` file), Python-3.6.10 is loaded for you whenever you logged on to the cluster. This is achieved through `module load python/3.6.10` in `.bash_profile` file.
+
+I only add this line of code since some R package needs Python interpreter to actually be able to install (for example, [Rmagic](https://github.com/KrishnaswamyLab/MAGIC), because...well, see this [issue](https://github.com/KrishnaswamyLab/MAGIC/issues/187#issuecomment-813866686)).
+
+In other cases, I don't really care if there is Python in the login node (it's not wise to run any program that needs more than 2 min to run in login node, submit a job instead).
+
+So what to do if you want to submit a Python job? I include my template here (load Python 3.6.10 and install networkx, pandas, scipy; you can change to whatever Python version/package you want it to install by modifying the template):
+
+```sh
+#!/bin/bash
+#SBATCH -J my_job_name
+#SBATCH --account=de▇▇▇
+#SBATCH --cpus-per-task=1
+#SBATCH --mem-per-cpu=4G # 1*4G mem
+#SBATCH -t 1:30:00 # Running time of 1.5 hour
+
+module load python/3.6
+virtualenv --no-download $SLURM_TMPDIR/env
+source $SLURM_TMPDIR/env/bin/activate
+pip install --no-index --upgrade pip
+
+pip install --no-index networkx pandas scipy
+
+# By default, print in Python is buffered, meaning that it does not write to files or stdout immediately, 
+#    and needs to be 'flushed' to force the writing to stdout immediately. -u Force stdin, 
+#    stdout and stderr to be totally unbuffered. On systems where it matters, also put stdin, stdout and stderr in binary mode. 
+python -u /path/to/PythonScript/my_script.py > my_script.py.out
+```
+
+This template will also save Python script output to a separate `.out` file, which is nice since it will not get mixed up in default slurm `.out` file. 
+
+If you wish to use SLURM_TMPDIR with Python job, I also included a template here. What it does is, first, assuming you have a Python script `my_script.py` that load a previous pickle file and do some calculation and output some pickle files. What you do is first you compress the needed input pickle file to a tarball (using something like `tar -cf /path/to/where/you/want/tar/saved/my_input_data.pickle.tar my_input_data.pickle`), and then running this job submission template will create a folder `my_result` on the local disk of the computation node, and extract my_input_data.pickle in it (through `tar -xf /path/to/needed/data/tar/my_input_data.pickle.tar`). Then it will load Python 3.6.10 and install networkx, pandas, scipy and do all the calculations you wrote in `my_script.py`. After that, it will compress the `my_result` folder in the computation node and save that to your login node. 
+
+After that, the final two lines of code will extract `my_result.tar` so you will be able to view the outputting pickles in login node. 
+
+```sh
+#!/bin/bash
+#SBATCH -J my_job_name
+#SBATCH --account=de▇▇▇
+#SBATCH --cpus-per-task=1
+#SBATCH --mem-per-cpu=4G # 1*4G mem
+#SBATCH -t 1:30:00 # Running time of 1.5 hour
+
+cd $SLURM_TMPDIR
+mkdir my_result
+cd my_result
+tar -xf /path/to/needed/data/tar/my_input_data.pickle.tar
+
+module load python/3.6
+virtualenv --no-download $SLURM_TMPDIR/env
+source $SLURM_TMPDIR/env/bin/activate
+pip install --no-index --upgrade pip
+
+pip install --no-index networkx pandas scipy
+
+# Now do my computations here on the local disk using the contents of the extracted archive...
+# By default, print in Python is buffered, meaning that it does not write to files or stdout immediately, 
+#    and needs to be 'flushed' to force the writing to stdout immediately. -u Force stdin, 
+#    stdout and stderr to be totally unbuffered. On systems where it matters, also put stdin, stdout and stderr in binary mode. 
+python -u /path/to/PythonScript/my_script.py > my_script.py.out
+
+# The computations are done, so clean up the data set...
+#rm my_input_data.pickle #optional, remove input pickle to save disk space and reduce tarball size.
+cd $SLURM_TMPDIR
+tar -cf /path/to/where/you/want/output/saved/my_result.tar my_result
+
+# Extract results in your own project folder in login node
+cd /path/to/where/you/want/output/saved
+tar -xf /path/to/where/you/want/output/saved/my_result.tar
+```
+
+By using SLURM_TMPDIR, your job will not use the parallel filesystem (/home, /project, /scratch) and I have found it to be *slightly quicker?* sometimes (definitely puts less pressure to login node). Also, if you are doing benchmarking, you will want to make sure to use SLURM_TMPDIR and avoid using the parallel filesystem (suggested by Compute Canada support staff).
