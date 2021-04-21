@@ -13,6 +13,7 @@ Table of Contents<sup>*</sup>
     - [6.3 Load different versions of R/Python/... using modules](#63-load-different-versions-of-rpython-using-modules)
         - [Want R?](#want-r)
         - [Want Python?](#want-python)
+        - [What if the Python package cannot be found with `pip install --no-index`?](#what-if-the-python-package-cannot-be-found-with-pip-install---no-index)
 
 <sub>*: V0.0.1 by Yang (Simon) Guo, based on V0.0.2 of my zh-CN document - operating on Compute Canada clusters</sub>
 
@@ -408,3 +409,78 @@ tar -xf /path/to/where/you/want/output/saved/my_result.tar
 ```
 
 By using SLURM_TMPDIR, your job will not use the parallel filesystem (/home, /project, /scratch) and I have found it to be *slightly quicker?* sometimes (definitely puts less pressure to login node). Also, if you are doing benchmarking, you will want to make sure to use SLURM_TMPDIR and avoid using the parallel filesystem (suggested by Compute Canada support staff).
+
+#### What if the Python package cannot be found with `pip install --no-index`?
+
+Back to our aforementioned example of `Rmagic`, this R package requires an additional Python package called magic-impute, but it does not exist in Compute Canada Wheels (e.g. if you try installing it using `pip install --no-index magic-impute` you get `Could not find a version that satisfies the requirement magic-impute (from versions: ) No matching distribution found for magic-impute` error). In this case you need to drop `--no-index` flag and install using `pip install magic-impute`.
+
+This raised a problem. Since magic-impute (or other applicable Python packages) can only be installed without `--no-index` flag, meaning to install it we need access to the internet. However, most of the compute node cannot access the internet! If you just add a line in job script to make it look like below, it **won't work**, it will give failed to establish a new connection error.
+
+```sh
+...
+
+virtualenv --no-download $SLURM_TMPDIR/env
+source $SLURM_TMPDIR/env/bin/activate
+pip install --no-index --upgrade pip
+
+pip install --no-index networkx pandas scipy
+pip install magic-impute # will not work, give connection error
+
+...
+```
+
+Therefore, if you require uncommon Python packages, we can only install those packages locally and source local virtualenv instead of creating a new virtualenv on $SLURM_TMPDIR like the code above.
+
+Use magic-impute and Python 3.6.10 on Graham as an example:
+
+In Graham login node:
+
+Install magic-impute Python package (reuqired by Rmagic), use following commands:
+
+```sh
+module load python/3.6
+virtualenv --no-download ~/ENV
+source ~/ENV/bin/activate
+
+pip install --no-index --upgrade pip
+
+pip install magic-impute
+```
+
+Then install Rmagic package in R, in login node use following commands:
+
+```sh
+module load r/4.0.2
+ 
+mkdir -p ~/.local/R/$EBVERSIONR/
+export R_LIBS=~/.local/R/$EBVERSIONR/
+
+R -e 'install.packages("Rmagic", repos="https://cloud.r-project.org/")'
+```
+
+Then in your job script, it will now look like this:
+
+```sh
+#!/bin/bash
+#SBATCH -J my_job_name
+#SBATCH --account=de▇▇▇
+#SBATCH --cpus-per-task=1
+#SBATCH --mem-per-cpu=4G # 1*4G mem
+#SBATCH -t 1:30:00 # Running time of 1.5 hour
+
+module load gcc/9.3.0 r/4.0.2              # Adjust version and add the gcc module used for installing packages.
+# specify the local installation directory according to currently R module that is loaded and install needed package.
+mkdir -p ~/.local/R/$EBVERSIONR/
+export R_LIBS=~/.local/R/$EBVERSIONR/
+
+module load python/3.6
+source ~/ENV/bin/activate # see here we no longer create virtualenv in $SLURM_TMPDIR, instead, we source local virtualenv with magic-impute installed.
+
+Rscript /path/to/RScript/my_script.R
+```
+
+To exit the virtual environment in login node, simply enter the command `deactivate`:
+
+```sh
+(ENV) [name@server ~] deactivate
+```
