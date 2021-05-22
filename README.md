@@ -18,6 +18,9 @@ When we are done with the simple introductory guide above and moving further wit
     $ sacct -j <jobID> --format=JobID,JobName,MaxRSS,Elapsed
     ```
     Use the MaxRSS accounting field to determine how much memory a job needed. The value returned will be the largest resident set size for any of the tasks. If you want to know which task and node this occurred on, print the MaxRSSTask and MaxRSSNode fields also. The `sstat` command works on a running job much the same way that `sacct` works on a completed job.
+3. Want to transfer large data across different clusters (e.g. transfer 20GiB data from Graham to Beluga?)?
+
+    Use [Globus](http://globus.computecanada.ca/) (documentation: [https://docs.computecanada.ca/wiki/Globus](https://docs.computecanada.ca/wiki/Globus))! Blazing fast transfer, we are talking 10-GiB-in-seconds fast. Forget about open two Cyberduck windows and drap-n-drop, it takes forever and your computer has to stay in wake during.
 
 ## FAQ
 
