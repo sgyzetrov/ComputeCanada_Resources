@@ -15,7 +15,7 @@ Table of Contents<sup>*</sup>
         - [Want Python?](#want-python)
         - [What if the Python package cannot be found with `pip install --no-index`?](#what-if-the-python-package-cannot-be-found-with-pip-install---no-index)
 
-<sub>*: V0.0.1 by Yang (Simon) Guo, based on V0.0.2 of my zh-CN document - operating on Compute Canada clusters</sub>
+<sub>*: V0.0.3 by Yang (Simon) Guo, based on V0.0.2 of my zh-CN document - operating on Compute Canada clusters</sub>
 
 ## 1. Introduction
 
